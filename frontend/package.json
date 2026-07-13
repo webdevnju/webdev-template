@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "api:generate": "openapi-typescript ../contracts/openapi.yaml -o src/lib/api/generated/schema.ts",
+    "api:check": "openapi-typescript ../contracts/openapi.yaml -o src/lib/api/generated/schema.ts --check",
     "dev": "next dev --port ${FRONTEND_PORT:-3000}",
     "build": "next build --webpack",
     "start": "next start --port ${FRONTEND_PORT:-3000}",
@@ -12,6 +14,7 @@
   },
   "dependencies": {
     "next": "^16.2.10",
+    "openapi-fetch": "^0.17.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },
@@ -22,6 +25,7 @@
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.39.0",
     "eslint-config-next": "^16.2.10",
+    "openapi-typescript": "^7.13.0",
     "tailwindcss": "^4.3.2",
     "typescript": "^5.9.3"
   }

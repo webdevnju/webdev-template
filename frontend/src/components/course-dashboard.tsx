@@ -2,25 +2,11 @@
 
 import { useEffect, useState } from "react";
 
-type HealthResponse = {
-  status: "ok";
-  service: string;
-  timestamp: string;
-};
-
-type Course = {
-  id: number;
-  title: string;
-  description: string;
-  createdAt: string;
-};
-
-type CourseResponse = {
-  data: Course[];
-};
+import { getHealth, type Health } from "@/lib/api/health";
+import { listCourses, type Course } from "@/lib/api/courses";
 
 export function CourseDashboard() {
-  const [health, setHealth] = useState<HealthResponse | null>(null);
+  const [health, setHealth] = useState<Health | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,19 +16,13 @@ export function CourseDashboard() {
 
     async function loadDashboard() {
       try {
-        const [healthResponse, courseResponse] = await Promise.all([
-          fetch("/api/health", { signal: controller.signal }),
-          fetch("/api/courses", { signal: controller.signal }),
+        const [healthData, coursesData] = await Promise.all([
+          getHealth(controller.signal),
+          listCourses({ signal: controller.signal }),
         ]);
 
-        if (!healthResponse.ok || !courseResponse.ok) {
-          throw new Error("API 返回了非预期状态");
-        }
-
-        const healthData = (await healthResponse.json()) as HealthResponse;
-        const courseData = (await courseResponse.json()) as CourseResponse;
         setHealth(healthData);
-        setCourses(courseData.data);
+        setCourses(coursesData);
         setError(null);
       } catch (reason) {
         if (reason instanceof Error && reason.name !== "AbortError") {

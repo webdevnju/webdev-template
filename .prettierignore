@@ -4,4 +4,4 @@ dist
 coverage
 package-lock.json
 backend/data
-
+frontend/src/lib/api/generated/schema.ts
