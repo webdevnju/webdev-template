@@ -40,7 +40,7 @@
 
 ### P2：交付工程补强
 
-1. 增加根 `.dockerignore`，避免把本地 `node_modules`、`.next`、`dist`、日志、数据库和密钥送入 Docker build context。
+1. 根 `.dockerignore` 已加入构建上下文边界，避免把本地 `node_modules`、`.next`、`dist`、日志、数据库和密钥送入 Docker build context；新增构建输入时应继续维护该边界。
 2. 当认证、结构化日志、requestId、缓存或限流成为需求时，以 Middleware 实现跨切面能力，不散落到 Controller。
 3. 只有当渲染、状态、ORM、缓存或服务拆分出现需要长期解释的取舍时新增 ADR；不要把架构决策混入功能 Spec。
 

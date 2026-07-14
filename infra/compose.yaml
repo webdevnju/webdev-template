@@ -1,24 +1,18 @@
 services:
-  frontend:
+  app:
+    # 按实际发布版本修改 IMAGE_TAG；例如 IMAGE_TAG=1.0.0，且需与已构建或已加载的镜像标签一致。
+    image: course-demo:${IMAGE_TAG:-latest}
     build:
       context: ..
-      dockerfile: infra/frontend.Dockerfile
+      dockerfile: infra/Dockerfile
+      args:
+        BACKEND_INTERNAL_URL: http://127.0.0.1:7001
     environment:
       FRONTEND_PORT: 3000
-      BACKEND_INTERNAL_URL: http://backend:7001
-    ports:
-      - "3000:3000"
-    depends_on:
-      backend:
-        condition: service_healthy
-
-  backend:
-    build:
-      context: ..
-      dockerfile: infra/backend.Dockerfile
-    environment:
       BACKEND_PORT: 7001
       DATABASE_PATH: /app/backend/data/course-demo.sqlite
+    ports:
+      - "3000:3000"
     volumes:
       - course-data:/app/backend/data
     healthcheck:
@@ -27,10 +21,11 @@ services:
           "CMD",
           "node",
           "-e",
-          "fetch('http://localhost:7001/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
         ]
       interval: 5s
       timeout: 3s
+      start_period: 10s
       retries: 10
 
 volumes:

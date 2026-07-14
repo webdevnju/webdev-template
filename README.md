@@ -32,6 +32,7 @@ npm run dev
 ```bash
 npm run dev           # 同时启动前端与后端
 npm run build         # 构建全部工作区
+npm run build:image   # 使用 Docker Buildx 构建 X64 应用镜像
 npm run test          # 运行全部测试
 npm run test:e2e      # 启动前后端并运行 Playwright 端到端测试
 npm run lint          # 运行静态检查
@@ -56,6 +57,53 @@ npm run dev --workspace backend
 ```
 
 格式化命令统一从仓库根目录运行，不在各工作区重复定义。根级 `lint`、`typecheck`、`test` 和 `build` 会严格遍历两个工作区；任一工作区缺少对应脚本都会使命令失败。
+
+## 容器化运行
+
+前端和后端会构建到同一个镜像，并在同一个应用容器中运行。Compose 只对外发布前端端口；浏览器和其他客户端通过同源 `/api/*` 路径访问后端。
+
+### 使用 Buildx 打包镜像
+
+需要 Docker 已启用 Buildx（Docker Desktop 默认包含）。以下命令默认构建 `linux/amd64`（X64）镜像，并以 `course-demo:latest` 加载到本地 Docker：
+
+```bash
+npm run build:image
+```
+
+可将脚本参数放在 npm 的 `--` 之后。构建 ARM64 镜像：
+
+```bash
+npm run build:image -- --platform linux/arm64 --tag course-demo:arm64
+```
+
+同时构建 X64 和 ARM64 并推送多架构镜像（请替换为可写入的镜像仓库地址并提前登录）：
+
+```bash
+npm run build:image -- \
+  --platform linux/amd64,linux/arm64 \
+  --tag registry.example.com/course-demo:latest \
+  --push
+```
+
+Buildx 不能把多架构结果同时加载到本地 Docker，因此多架构构建需要使用 `--push`；只验证构建且不导出镜像时可改用 `--no-load`。运行 `npm run build:image -- --help` 可查看全部参数。
+
+### 使用 Compose 运行
+
+```bash
+docker compose -f infra/compose.yaml up --build
+```
+
+Compose 默认使用 `course-demo:latest`。发布时建议使用明确版本号，并确保这里的 `IMAGE_TAG` 与 Buildx 构建或 `docker load` 加载的镜像标签一致：
+
+```bash
+# 构建并以 1.0.0 作为镜像版本
+IMAGE_TAG=1.0.0 docker compose -f infra/compose.yaml up --build
+
+# 服务端已经加载 course-demo:1.0.0 时，直接启动而不重新构建
+IMAGE_TAG=1.0.0 docker compose -f infra/compose.yaml up -d --no-build
+```
+
+启动后访问 http://localhost:3000。SQLite 数据保存在 Compose 管理的 `course-data` 数据卷中，重建应用容器不会删除已有课程数据。
 
 ## 目录说明
 

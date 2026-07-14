@@ -10,7 +10,9 @@
   "scripts": {
     "dev": "concurrently --kill-others-on-fail --names frontend,backend --prefix-colors cyan,magenta \"npm run dev --workspace frontend\" \"npm run dev --workspace backend\"",
     "build": "npm run build --workspaces",
-    "test": "npm run test --workspaces",
+    "build:image": "bash scripts/build-image.sh",
+    "test": "npm run test:infra && npm run test --workspaces",
+    "test:infra": "node --test infra/*.test.mjs",
     "test:e2e": "playwright test",
     "lint": "npm run lint --workspaces",
     "typecheck": "npm run typecheck --workspaces",
